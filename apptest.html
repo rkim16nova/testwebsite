@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Mobile Mouse App Demo</title>
+    <style>
+      /* Styling for the left and right buttons */
+      .button {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: gray;
+        margin: 10px;
+        cursor: pointer;
+      }
+      .button.clicked {
+        background-color: green;
+      }
+
+      /* Styling for the tracked element */
+      .tracked-element {
+        position: absolute;
+        width: 50px;
+        height: 50px;
+        background-color: blue;
+        top: 0;
+        left: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mobile Mouse App Demo</h1>
+
+    <div>
+      <h2>Left/Right Buttons</h2>
+      <div id="left-button" class="button">L</div>
+      <div id="right-button" class="button">R</div>
+    </div>
+
+    <div>
+      <h2>Accelerometer Data</h2>
+      <div class="tracked-element" id="tracked-element"></div>
+    </div>
+
+    <script>
+      const socket = new WebSocket("wss://1jhyqdgocb.execute-api.us-east-1.amazonaws.com/dev");
+
+      socket.addEventListener("open", (event) => {
+        console.log("WebSocket connection established");
+      });
+
+      socket.addEventListener("message", (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Received message:", data);
+
+        // Update button state based on WebSocket data
+        const leftButton = document.getElementById("left-button");
+        const rightButton = document.getElementById("right-button");
+        if (data.leftButtonClicked) {
+          leftButton.classList.add("clicked");
+        } else {
+          leftButton.classList.remove("clicked");
+        }
+        if (data.rightButtonClicked) {
+          rightButton.classList.add("clicked");
+        } else {
+          rightButton.classList.remove("clicked");
+        }
+
+        // Update element position based on WebSocket data
+        const element = document.getElementById("tracked-element");
+        const x = data.accelerometerX;
+        const y = data.accelerometerY;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+      });
+
+      socket.addEventListener("error", (event) => {
+        console.error("WebSocket error:", event);
+      });
+
+      socket.addEventListener("close", (event) => {
+        console.log("WebSocket connection closed");
+      });
+    </script>
+  </body>
+</html>
